@@ -23,27 +23,32 @@ def board_rendered(board: list) -> str:
         rows.append(' | '.join(row))
     return '\n---------\n'.join(rows)
 
-def is_winner(board):
-    items = []
+def get_winning_slices():
+    slices = []
     for r in range(3):
         start = r * 3
         end = start + 3
         row = slice(start, end, None)
-        items.append(all(board[row][0] == x for x in board[row]))
+        slices.append(row)
     
     for c in range(3):
         start = c
         end = 6 + c + 1
         col = slice(start, end, 3)
-        items.append(all(board[col][0] == x for x in board[col]))
+        slices.append(col)
 
     diag_1 = slice(0, 9, 4)
     diag_2 = slice(2, 7, 2)
-    items.append(all(board[diag_1][0] == x for x in board[diag_1]))
-    items.append(all(board[diag_2][0] == x for x in board[diag_2]))
+    slices.append(diag_1)
+    slices.append(diag_2)
+    
+    return slices
 
-    res = any(items)
-    return res
+def check_win_slice(sl, board):
+    return all(board[sl][0] == x for x in board[sl])
+
+def is_winner(board):
+    return any(check_win_slice(sl, board) for sl in get_winning_slices())
 
 
 def player_gen(name_x='Player 1', name_o='Player 2'):
@@ -94,8 +99,6 @@ while True:
     print(board_rendered(board))
     print(menu_text)
 
-    is_winner(board)
-
     pl = next(player)
     inp = get_input(pl, board)
 
@@ -109,7 +112,7 @@ while True:
         print('Terminating the current game & starting new one')
         print()
         sleep(4)
-        board, player = init_game('___1', '___2')
+        board, player = init_game()
         continue
     else:
         board[inp] = pl['symb']
